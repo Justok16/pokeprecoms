@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { CATEGORIES_PRECOMMANDE } from "@/lib/constantes";
 import { createClient } from "@/lib/supabase/server";
 import {
   basculerNotifEmail,
@@ -34,11 +36,19 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
   const abonnementActif =
     !!abonnement && STATUTS_ABONNEMENT_ACTIF.includes(abonnement.status);
 
-  const { data: alertes } = await supabase
+  const categorieParam = searchParams.categorie;
+  const categorieActive = (
+    Array.isArray(categorieParam) ? categorieParam[0] : categorieParam
+  ) as (typeof CATEGORIES_PRECOMMANDE)[number] | undefined;
+  const filtreValide = categorieActive && CATEGORIES_PRECOMMANDE.includes(categorieActive);
+
+  let requeteAlertes = supabase
     .from("precommande_alerts")
-    .select("id, titre_produit, boutique, url_produit, prix, created_at")
+    .select("id, titre_produit, boutique, url_produit, prix, categorie, created_at")
     .order("created_at", { ascending: false })
     .limit(20);
+  if (filtreValide) requeteAlertes = requeteAlertes.eq("categorie", categorieActive);
+  const { data: alertes } = await requeteAlertes;
 
   const { data: preferences } = await supabase
     .from("user_preferences")
@@ -138,6 +148,31 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
 
         <section className={PANNEAU}>
           <h2 className="mb-3 text-sm font-medium text-foreground">Dernières précommandes détectées</h2>
+          <div className="mb-4 flex flex-wrap gap-2">
+            <Link
+              href="/dashboard"
+              className={`rounded-full px-3 py-1 text-xs font-medium transition ${
+                !filtreValide
+                  ? "bg-accent text-accent-ink"
+                  : "bg-background text-muted hover:text-foreground"
+              }`}
+            >
+              Tout le scellé
+            </Link>
+            {CATEGORIES_PRECOMMANDE.map((categorie) => (
+              <Link
+                key={categorie}
+                href={`/dashboard?categorie=${encodeURIComponent(categorie)}`}
+                className={`rounded-full px-3 py-1 text-xs font-medium transition ${
+                  categorieActive === categorie
+                    ? "bg-accent text-accent-ink"
+                    : "bg-background text-muted hover:text-foreground"
+                }`}
+              >
+                {categorie}
+              </Link>
+            ))}
+          </div>
           {alertes && alertes.length > 0 ? (
             <ul className="flex flex-col gap-3">
               {alertes.map((a) => (
@@ -159,7 +194,9 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
             </ul>
           ) : (
             <p className="text-sm text-muted">
-              Aucune précommande détectée pour l&apos;instant — reviens bientôt.
+              {filtreValide
+                ? "Aucune précommande dans cette catégorie pour l'instant."
+                : "Aucune précommande détectée pour l'instant — reviens bientôt."}
             </p>
           )}
         </section>
