@@ -25,15 +25,15 @@ appliquer le schéma :
    Settings > API** du dashboard Supabase).
 2. Dans le dashboard Supabase (**SQL Editor**), exécuter dans l'ordre le
    contenu de chaque fichier de `supabase/migrations/` (`0001_...` à
-   `0004_...`).
+   `0005_...`).
 3. Récupérer aussi la clé `service_role` (secrète) pour
    `SUPABASE_SERVICE_ROLE_KEY` (`.env.local` + réglages Vercel).
-4. Pour connecter le scraper (repo séparé) à cette base : ajouter
-   `SUPABASE_URL` (= `NEXT_PUBLIC_SUPABASE_URL`) et
-   `SUPABASE_SERVICE_ROLE_KEY` comme secrets GitHub Actions sur
-   `justok16/pokedeals` — **pont pas encore construit côté scraper** (cf.
-   `CLAUDE.md`), ces secrets ne servent à rien tant que ce module n'existe
-   pas.
+4. Pour connecter le scraper (repo séparé `justok16/pokedeals`) à cette
+   base : ajouter `POKEPRECOMS_SUPABASE_URL` (= `NEXT_PUBLIC_SUPABASE_URL`)
+   et `POKEPRECOMS_SUPABASE_SERVICE_ROLE_KEY` (= `SUPABASE_SERVICE_ROLE_KEY`)
+   comme secrets GitHub Actions sur `justok16/pokedeals` — le pont
+   (`connecteur_supabase_precoms.py`) est construit depuis le 23/08/2026, ces
+   secrets sont bien utilisés dès qu'ils sont configurés.
 
 (`scripts/setup-supabase.sh` existe pour provisionner un projet Supabase
 *à partir de zéro* via l'API — pas utile ici puisque le projet existe déjà,
