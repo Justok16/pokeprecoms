@@ -37,7 +37,7 @@ Repo scaffoldé le 23/08/2026 à partir de `pokedeals-saas` (même stack : Next.
 
 ## Icônes/branding
 
-Les fichiers `public/icons/*.png` et `app/favicon.ico` sont pour l'instant des **copies de ceux de pokedeals-saas** (placeholders) — à remplacer par une identité visuelle propre à PokéPrécoms avant le lancement public.
+Identité visuelle propre créée le 23/08/2026 (`public/icons/*.png` + `app/favicon.ico`) : coffret cadeau (contour or, ruban) + étincelle magenta sur fond dégradé violet Vif Collector — même grammaire visuelle que l'icône carte à jouer de pokedeals-saas (coin arrondi, fond dégradé, contour or, étincelle) mais pictogramme et couleur d'accent différents, pour signaler la parenté de marque (cohérence pour le bundle) tout en distinguant clairement les deux apps. Variante `icon-maskable-512.png` : même pictogramme réduit à ~72% avec fond plein bord à bord (zone de sécurité pour le masque circulaire Android).
 
 ## Vérification Google Search Console
 
