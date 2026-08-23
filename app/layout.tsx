@@ -42,6 +42,9 @@ export const metadata: Metadata = {
     "alerte précommande Pokémon",
   ],
   manifest: "/manifest.webmanifest",
+  verification: {
+    google: "Fn1oLeSvs2lTKx-uQUsGfvdYlr1ofxwgebYdhsrts9E",
+  },
   icons: {
     icon: [{ url: "/icons/favicon-32.png", sizes: "32x32", type: "image/png" }],
     apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180" }],
