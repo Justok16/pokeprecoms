@@ -125,6 +125,28 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
         </section>
 
         {abonnementActif && (
+          <section className={`${PANNEAU} flex items-center justify-between gap-4`}>
+            <div>
+              <p className="text-sm font-semibold text-foreground">
+                🎁 Découvre PokéDeals
+              </p>
+              <p className="mt-1 text-xs text-muted">
+                Notre autre service alerte sur les bonnes affaires cartes Pokémon TCG. Abonne-toi
+                aux deux et paie moins cher au total.
+              </p>
+            </div>
+            <a
+              href="https://pokedeals-rho.vercel.app"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`${LIEN_DISCRET} shrink-0`}
+            >
+              Découvrir →
+            </a>
+          </section>
+        )}
+
+        {abonnementActif && (
           <section className={`${PANNEAU} flex flex-col gap-2`}>
             <h2 className="text-sm font-medium text-foreground">Notifications</h2>
             <NotifPush />

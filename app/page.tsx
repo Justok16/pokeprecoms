@@ -224,6 +224,34 @@ export default async function Home() {
           </p>
         </section>
 
+        <section className="w-full">
+          <div className="rounded-2xl bg-gradient-to-br from-cyan to-accent p-[1.5px]">
+            <div className="flex flex-col items-center gap-3 rounded-[15px] bg-surface p-6 text-center sm:flex-row sm:justify-between sm:text-left">
+              <div>
+                <p className="font-mono text-xs uppercase tracking-[0.15em] text-cyan">
+                  Le service sœur
+                </p>
+                <h2 className="mt-1 font-display text-lg font-bold text-foreground">
+                  PokéDeals
+                </h2>
+                <p className="mt-1 max-w-md text-sm text-muted">
+                  Configure ta watchlist de cartes Pokémon TCG et reçois une alerte dès
+                  qu&apos;une bonne affaire tombe sous ton seuil de prix. Abonne-toi aux deux
+                  services et paie moins cher sur PokéPrécoms.
+                </p>
+              </div>
+              <a
+                href="https://pokedeals-rho.vercel.app"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="shrink-0 rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-ink transition hover:-translate-y-0.5 hover:brightness-110"
+              >
+                Découvrir PokéDeals →
+              </a>
+            </div>
+          </div>
+        </section>
+
         <section className="flex w-full flex-col gap-6">
           <h2 className="text-center font-display text-xl font-bold text-foreground">
             Questions fréquentes
