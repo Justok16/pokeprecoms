@@ -36,11 +36,11 @@ const CONFIANCE = [
 const FAQ = [
   {
     question: "Combien coûte PokéPrécoms ?",
-    reponse: `${PRIX_SOLO.toFixed(2)} €/mois, sans niveau gratuit — le service consiste à couvrir tout le catalogue de précommandes, ce qui ne se prête pas à un palier limité. Si tu es déjà abonné à PokéDeals, une réduction s'applique automatiquement au moment du paiement.`,
+    reponse: `${PRIX_SOLO.toFixed(2)} €/mois, sans niveau gratuit — le service consiste à couvrir tout le catalogue de précommandes, ce qui ne se prête pas à un palier limité. Si tu es déjà abonné à PokéDeals, un geste commercial s'applique automatiquement au moment du paiement.`,
   },
   {
     question: "J'ai déjà PokéDeals, ça change quoi ?",
-    reponse: "Le tarif de PokéPrécoms est automatiquement réduit à 5,00 €/mois si tu fais partie des 200 premiers abonnés fondateurs PokéDeals, ou 7,00 €/mois sinon — soit 9,99 € ou 14,99 € au total pour les deux services, sans rien à configurer.",
+    reponse: "En guise de geste commercial pour nos abonnés PokéDeals, le tarif de PokéPrécoms est automatiquement réduit à 5,00 €/mois si tu fais partie des 200 premiers abonnés fondateurs PokéDeals, ou 7,00 €/mois sinon — soit 9,99 € ou 14,99 € au total pour les deux services, sans rien à configurer.",
   },
   {
     question: "Où sont scannées les précommandes ?",
@@ -133,6 +133,9 @@ export default async function Home() {
             <span className="rounded-full bg-surface px-3 py-1.5 text-muted">
               Pas d&apos;essai gratuit
             </span>
+            <span className="rounded-full bg-surface px-3 py-1.5 text-accent">
+              🎁 Geste commercial si tu as PokéDeals
+            </span>
           </div>
           <Link
             href={user ? "/dashboard" : "/login"}
@@ -218,8 +221,9 @@ export default async function Home() {
                 <span className="text-sm font-normal text-muted">/mois</span>
               </p>
               <p className="mt-1 text-xs text-cyan">
-                Déjà abonné à PokéDeals ? Le tarif descend automatiquement à 5,00 €/mois (offre
-                fondateur) ou 7,00 €/mois — aucune configuration nécessaire.
+                Déjà abonné à PokéDeals ? En guise de geste commercial, le tarif descend
+                automatiquement à 5,00 €/mois (offre fondateur) ou 7,00 €/mois — aucune
+                configuration nécessaire.
               </p>
               <ul className="mt-4 flex flex-col gap-2 text-sm text-muted">
                 <li>Toutes les précommandes détectées, sans limite</li>
@@ -248,7 +252,8 @@ export default async function Home() {
                 <p className="mt-1 max-w-md text-sm text-muted">
                   Configure ta watchlist de cartes Pokémon TCG et reçois une alerte dès
                   qu&apos;une bonne affaire tombe sous ton seuil de prix. Abonne-toi aux deux
-                  services et paie moins cher sur PokéPrécoms.
+                  services : le geste commercial sur PokéPrécoms s&apos;applique
+                  automatiquement.
                 </p>
               </div>
               <a
