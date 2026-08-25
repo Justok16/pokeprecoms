@@ -1,6 +1,8 @@
 // Chiffre réel de boutiques françaises et japonaises couvertes par le
-// scraper partagé (même source que pokedeals-saas, cf. son lib/constantes.ts).
-export const NOMBRE_BOUTIQUES = "83+";
+// scraper partagé (même source que pokedeals-saas, cf. son lib/constantes.ts
+// -- 112 boutiques actives comptées au 25/08/2026, cohérent avec le "110+"
+// affiché).
+export const NOMBRE_BOUTIQUES = "110+";
 
 // Catégories du filtre dashboard (app/dashboard/page.tsx) -- DOIVENT rester
 // synchronisées avec les constantes CATEGORIE_* de precommande_generique.py
