@@ -126,6 +126,14 @@ export default async function Home() {
             Coffrets, displays, ETB... les précommandes rares partent en quelques minutes. On les
             repère pour toi, sur {NOMBRE_BOUTIQUES} boutiques françaises et japonaises.
           </p>
+          <div className="flex flex-wrap items-center justify-center gap-2 font-mono text-xs">
+            <span className="rounded-full bg-surface px-3 py-1.5 text-foreground">
+              💳 Payant dès l&apos;inscription
+            </span>
+            <span className="rounded-full bg-surface px-3 py-1.5 text-muted">
+              Pas d&apos;essai gratuit
+            </span>
+          </div>
           <Link
             href={user ? "/dashboard" : "/login"}
             className="rounded-full bg-accent px-6 py-3 text-sm font-semibold text-accent-ink shadow-[0_10px_30px_-8px_rgba(255,210,63,0.6)] transition hover:-translate-y-0.5 hover:brightness-110"
@@ -199,7 +207,10 @@ export default async function Home() {
           </h2>
           <div className="rounded-2xl bg-gradient-to-br from-accent to-cyan p-[1.5px]">
             <div className="rounded-[15px] bg-surface p-6">
-              <p className="text-sm font-semibold text-foreground">Abonnement</p>
+              <span className="inline-block rounded-full bg-accent px-2.5 py-1 font-mono text-[0.65rem] font-bold uppercase tracking-wide text-accent-ink">
+                Pas de niveau gratuit
+              </span>
+              <p className="mt-3 text-sm font-semibold text-foreground">Abonnement</p>
               <p className="mt-1 flex items-baseline gap-2">
                 <span className="font-mono text-4xl font-bold text-accent">
                   {PRIX_SOLO.toFixed(2)} €
@@ -219,8 +230,8 @@ export default async function Home() {
             </div>
           </div>
           <p className="text-center text-xs text-muted">
-            Pas de niveau gratuit — le service consiste à couvrir tout le catalogue de
-            précommandes.
+            Pas de niveau gratuit ni d&apos;essai — le service consiste à couvrir tout le
+            catalogue de précommandes dès l&apos;inscription.
           </p>
         </section>
 
