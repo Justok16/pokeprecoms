@@ -8,31 +8,35 @@ export function getStripe() {
   return new Stripe(process.env.STRIPE_SECRET_KEY!);
 }
 
-// Pas de niveau gratuit -- abonnement payant uniquement (cf. CGU, decision
-// explicite prise avec Justok le 23/08/2026 : le produit est "toutes les
-// precommandes detectees", moins naturel a limiter par nombre que la
-// watchlist de PokeDeals).
-export const PRIX_SOLO = 7.99;
+// Tarif solo (decide avec Justok le 27/08/2026, remplace l'ancien tarif
+// unique 7,99€ sans palier gratuit). Niveau gratuit desormais permis
+// cote produit : 1 alerte de precommande offerte pour essayer le service
+// (cf. LIMITE_ALERTES_GRATUIT, gerée cote scraper -- justok16/pokedeals,
+// connecteur_supabase_precoms.py -- puisque c'est lui qui envoie les
+// notifications broadcast, pas ce depot).
+export const PRIX_SOLO = 2.99;
 
-// Coupons "bundle" (memes noms que crees a la main dans le dashboard
-// Stripe, MEME COMPTE que pokedeals-saas -- cf. determinerCouponBundle) :
-//   - bundle-fondateur : -2,99€ (7,99€ -> 5,00€), pour un client ayant deja
-//     un abonnement PokeDeals actif AVEC le coupon fondateur early-bird-200
-//     applique (un des 200 premiers abonnes PokeDeals).
-//   - bundle-standard : -0,99€ (7,99€ -> 7,00€), pour un client ayant deja
-//     un abonnement PokeDeals actif SANS ce coupon.
-// Total combine avec PokeDeals : 4,99+5,00=9,99€ (fondateur) ou
-// 7,99+7,00=14,99€ (standard) -- chiffres decides avec Justok le 23/08/2026.
-export const BUNDLE_FONDATEUR_COUPON_ID = "bundle-fondateur";
-export const BUNDLE_STANDARD_COUPON_ID = "bundle-standard";
+// Nombre d'alertes de precommande offertes sans abonnement actif. Une fois
+// consommee (colonne user_preferences.alerte_gratuite_envoyee, cf.
+// migration 0007), plus aucune alerte gratuite -- il faut s'abonner pour
+// en recevoir de nouvelles. Le decompte et l'envoi vivent cote scraper
+// (justok16/pokedeals), cette constante ne sert ici qu'a l'affichage.
+export const LIMITE_ALERTES_GRATUIT = 1;
+
+// Coupon "bundle" (cree a la main dans le dashboard Stripe, MEME COMPTE
+// que pokedeals-saas -- cf. determinerCouponBundle ci-dessous et son
+// equivalent dans pokedeals-saas/lib/stripe.ts) : -1,00€ off, ramene le
+// second abonnement (quel qu'il soit) de 2,99€ a 1,99€/mois. Meme coupon
+// partage dans les DEUX sens, le geste commercial etant identique de
+// chaque cote.
+export const BUNDLE_DISCOUNT_COUPON_ID = "bundle-app-jumelee";
 
 // ID du Price Stripe de l'abonnement PokeDeals (meme compte Stripe) --
-// necessaire pour detecter si un client a deja PokeDeals actif au moment du
-// checkout PokePrecoms. A renseigner en variable d'env une fois connu (cf.
-// STRIPE_PRICE_ID dans pokedeals-saas/.env -- meme valeur ici, prefixee
-// POKEDEALS_ pour la distinguer du Price propre a PokePrecoms).
+// necessaire pour detecter si un client a deja PokeDeals actif au moment
+// du checkout PokePrecoms. A renseigner en variable d'env une fois connu
+// (cf. STRIPE_PRICE_ID dans pokedeals-saas/.env -- meme valeur ici,
+// prefixee POKEDEALS_ pour la distinguer du Price propre a PokePrecoms).
 const POKEDEALS_PRICE_ID = process.env.POKEDEALS_STRIPE_PRICE_ID;
-const POKEDEALS_EARLY_BIRD_COUPON_ID = "early-bird-200";
 
 export function estTesteurBeta(email: string | null | undefined) {
   if (!email) return false;
@@ -44,18 +48,19 @@ export function estTesteurBeta(email: string | null | undefined) {
 }
 
 /**
- * Determine le coupon bundle a appliquer au checkout PokePrecoms pour cet
- * email, en cherchant un abonnement PokeDeals actif deja existant pour le
- * MEME client Stripe (meme compte Stripe partage entre les deux apps, donc
- * une recherche directe par email suffit -- pas besoin d'appeler l'API de
- * pokedeals-saas ni de partager une base Supabase).
+ * Determine si le coupon bundle doit s'appliquer au checkout PokePrecoms
+ * pour cet email, en cherchant un abonnement PokeDeals actif deja existant
+ * pour le MEME client Stripe (meme compte Stripe partage entre les deux
+ * apps, donc une recherche directe par email suffit -- pas besoin
+ * d'appeler l'API de pokedeals-saas ni de partager une base Supabase).
  *
- * Toute erreur reseau/API Stripe retombe sur `null` (tarif plein, 7,99€) --
+ * Simplifie le 27/08/2026 (nouvelle tarification a plat, plus de
+ * distinction fondateur/standard) : un seul coupon possible, appliqué des
+ * qu'un abonnement PokeDeals actif existe, quel que soit son tarif.
+ *
+ * Toute erreur reseau/API Stripe retombe sur `null` (tarif plein, 2,99€) --
  * ne doit jamais bloquer un checkout PokePrecoms, meme si la verification
  * du bundle echoue.
- *
- * NON TESTE EN CONDITIONS REELLES : a verifier avec un vrai abonne fondateur
- * PokeDeals avant la mise en production.
  */
 export async function determinerCouponBundle(
   stripe: Stripe,
@@ -69,28 +74,11 @@ export async function determinerCouponBundle(
         customer: customer.id,
         status: "active",
         limit: 10,
-        expand: ["data.discounts"],
       });
-      for (const sub of subscriptions.data) {
-        const aLAbonnementPokedeals = sub.items.data.some(
-          (item) => item.price.id === POKEDEALS_PRICE_ID
-        );
-        if (!aLAbonnementPokedeals) continue;
-        // `discounts` : Array<string | Discount> -- seulement les entrees
-        // deja resolues (via expand ci-dessus) exposent `.source.coupon`,
-        // une entree encore sous forme d'ID string est traitee comme "pas
-        // fondateur" (ne devrait pas arriver avec cet expand, mais ne doit
-        // jamais faire planter la detection). `coupon` lui-meme peut etre
-        // soit l'ID (string), soit l'objet Coupon complet -- son `id` est
-        // toujours identique a l'ID lui-meme cote Stripe.
-        const estFondateur = sub.discounts.some((d) => {
-          if (typeof d === "string") return false;
-          const coupon = d.source.coupon;
-          const couponId = typeof coupon === "string" ? coupon : coupon?.id;
-          return couponId === POKEDEALS_EARLY_BIRD_COUPON_ID;
-        });
-        return estFondateur ? BUNDLE_FONDATEUR_COUPON_ID : BUNDLE_STANDARD_COUPON_ID;
-      }
+      const aLAbonnementPokedeals = subscriptions.data.some((sub) =>
+        sub.items.data.some((item) => item.price.id === POKEDEALS_PRICE_ID)
+      );
+      if (aLAbonnementPokedeals) return BUNDLE_DISCOUNT_COUPON_ID;
     }
   } catch {
     // Erreur API Stripe -- tarif plein par prudence, ne bloque jamais le checkout.

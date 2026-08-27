@@ -78,10 +78,10 @@ export async function creerSessionCheckout() {
   const stripe = getStripe();
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
-  // Tarif bundle : reduit automatiquement le prix si ce client a deja un
-  // abonnement PokeDeals actif (memes coupons crees a la main dans Stripe,
-  // cf. lib/stripe.ts). Aucun coupon applicable -> tarif plein 7,99€, sans
-  // jamais bloquer le checkout.
+  // Tarif bundle : reduit automatiquement le prix (2,99€ -> 1,99€) si ce
+  // client a deja un abonnement PokeDeals actif (meme coupon Stripe cree
+  // a la main, cf. lib/stripe.ts). Aucun coupon applicable -> tarif plein
+  // 2,99€, sans jamais bloquer le checkout.
   const couponId = await determinerCouponBundle(stripe, user.email);
   const discounts = couponId ? [{ coupon: couponId }] : undefined;
 
