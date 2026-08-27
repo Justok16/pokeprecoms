@@ -3,10 +3,12 @@ import { createClient } from "@/lib/supabase/server";
 import { PRIX_SOLO } from "@/lib/stripe";
 import { NOMBRE_BOUTIQUES } from "@/lib/constantes";
 
+const PRIX_BUNDLE = 1.99;
+
 const ETAPES = [
   {
-    titre: "Tu t'abonnes",
-    texte: "Aucune configuration : dès que tu es abonné, tu es couvert pour tout le catalogue Pokémon TCG.",
+    titre: "Tu t'inscris",
+    texte: "Aucune configuration : dès ton inscription, tu reçois 1 alerte de précommande gratuite pour essayer.",
   },
   {
     titre: "On surveille le marché pour toi",
@@ -36,11 +38,11 @@ const CONFIANCE = [
 const FAQ = [
   {
     question: "Combien coûte PokéPrécoms ?",
-    reponse: `${PRIX_SOLO.toFixed(2)} €/mois, sans niveau gratuit — le service consiste à couvrir tout le catalogue de précommandes, ce qui ne se prête pas à un palier limité. Si tu es déjà abonné à PokéDeals, un geste commercial s'applique automatiquement au moment du paiement.`,
+    reponse: `1 alerte gratuite dès ton inscription, pour essayer le service. Ensuite, ${PRIX_SOLO.toFixed(2)} €/mois pour des alertes illimitées — ${PRIX_BUNDLE.toFixed(2)} €/mois si tu es déjà abonné à PokéDeals, automatiquement au moment du paiement.`,
   },
   {
     question: "J'ai déjà PokéDeals, ça change quoi ?",
-    reponse: "En guise de geste commercial pour nos abonnés PokéDeals, le tarif de PokéPrécoms est automatiquement réduit à 5,00 €/mois si tu fais partie des 200 premiers abonnés fondateurs PokéDeals, ou 7,00 €/mois sinon — soit 9,99 € ou 14,99 € au total pour les deux services, sans rien à configurer.",
+    reponse: `Le tarif de PokéPrécoms est automatiquement réduit à ${PRIX_BUNDLE.toFixed(2)} €/mois si tu es déjà abonné à PokéDeals — soit ${(PRIX_SOLO + PRIX_BUNDLE).toFixed(2)} €/mois au total pour les deux services, sans rien à configurer. Chaque service reste utilisable indépendamment de l'autre : pas besoin des deux pour profiter de l'un.`,
   },
   {
     question: "Où sont scannées les précommandes ?",
@@ -52,7 +54,7 @@ const FAQ = [
   },
   {
     question: "Comment je reçois mes alertes ?",
-    reponse: "Par notification push directement dans le navigateur, et/ou par email — les deux canaux sont configurables indépendamment depuis le tableau de bord.",
+    reponse: "Par notification push directement dans le navigateur, et/ou par email — les deux canaux sont configurables indépendamment depuis le tableau de bord, dès l'inscription (avant même de t'abonner).",
   },
   {
     question: "Une alerte garantit-elle que je pourrai commander ?",
@@ -68,6 +70,13 @@ const DONNEES_STRUCTUREES = {
   operatingSystem: "Web",
   description: `Alertes automatiques sur les précommandes Pokémon TCG disponibles sur ${NOMBRE_BOUTIQUES} boutiques françaises et japonaises.`,
   offers: [
+    {
+      "@type": "Offer",
+      name: "Gratuit",
+      price: "0",
+      priceCurrency: "EUR",
+      description: "1 alerte de précommande offerte.",
+    },
     {
       "@type": "Offer",
       name: "Abonnement",
@@ -128,23 +137,20 @@ export default async function Home() {
           </p>
           <div className="flex flex-wrap items-center justify-center gap-2 font-mono text-xs">
             <span className="rounded-full bg-surface px-3 py-1.5 text-foreground">
-              💳 Payant dès l&apos;inscription
-            </span>
-            <span className="rounded-full bg-surface px-3 py-1.5 text-muted">
-              Pas d&apos;essai gratuit
+              🆓 1 alerte gratuite pour essayer
             </span>
             <span className="rounded-full bg-surface px-3 py-1.5 text-accent">
-              🎁 Geste commercial si tu as PokéDeals
+              ⭐ Illimité dès {PRIX_SOLO.toFixed(2)} €/mois
             </span>
           </div>
           <Link
             href={user ? "/dashboard" : "/login"}
             className="rounded-full bg-accent px-6 py-3 text-sm font-semibold text-accent-ink shadow-[0_10px_30px_-8px_rgba(255,210,63,0.6)] transition hover:-translate-y-0.5 hover:brightness-110"
           >
-            {user ? "Aller à mon tableau de bord" : "S'abonner"}
+            {user ? "Aller à mon tableau de bord" : "Essayer gratuitement"}
           </Link>
           <p className="font-mono text-xs text-cyan">
-            {PRIX_SOLO.toFixed(2)} €/mois — dès 5,00 €/mois si tu as déjà PokéDeals
+            {PRIX_SOLO.toFixed(2)} €/mois ensuite — {PRIX_BUNDLE.toFixed(2)} €/mois si tu as déjà PokéDeals
           </p>
         </section>
 
@@ -208,34 +214,43 @@ export default async function Home() {
           <h2 className="text-center font-display text-xl font-bold text-foreground">
             Tarifs
           </h2>
-          <div className="rounded-2xl bg-gradient-to-br from-accent to-cyan p-[1.5px]">
-            <div className="rounded-[15px] bg-surface p-6">
-              <span className="inline-block rounded-full bg-accent px-2.5 py-1 font-mono text-[0.65rem] font-bold uppercase tracking-wide text-accent-ink">
-                Pas de niveau gratuit
-              </span>
-              <p className="mt-3 text-sm font-semibold text-foreground">Abonnement</p>
-              <p className="mt-1 flex items-baseline gap-2">
-                <span className="font-mono text-4xl font-bold text-accent">
-                  {PRIX_SOLO.toFixed(2)} €
-                </span>
-                <span className="text-sm font-normal text-muted">/mois</span>
-              </p>
-              <p className="mt-1 text-xs text-cyan">
-                Déjà abonné à PokéDeals ? En guise de geste commercial, le tarif descend
-                automatiquement à 5,00 €/mois (offre fondateur) ou 7,00 €/mois — aucune
-                configuration nécessaire.
-              </p>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="rounded-2xl bg-surface p-6">
+              <p className="text-sm font-semibold text-foreground">Gratuit</p>
+              <p className="mt-1 font-mono text-2xl font-bold text-foreground">0 €</p>
               <ul className="mt-4 flex flex-col gap-2 text-sm text-muted">
-                <li>Toutes les précommandes détectées, sans limite</li>
-                <li>Alertes push et email</li>
-                <li>{NOMBRE_BOUTIQUES} boutiques françaises et japonaises</li>
-                <li>Résiliable à tout moment</li>
+                <li>1 alerte de précommande offerte</li>
+                <li>Push et email configurables dès l&apos;inscription</li>
+                <li>{NOMBRE_BOUTIQUES} boutiques surveillées</li>
               </ul>
+            </div>
+            <div className="rounded-2xl bg-gradient-to-br from-accent to-cyan p-[1.5px]">
+              <div className="h-full rounded-[15px] bg-surface p-6">
+                <span className="inline-block rounded-full bg-accent px-2.5 py-1 font-mono text-[0.65rem] font-bold uppercase tracking-wide text-accent-ink">
+                  🎁 Geste commercial si tu as PokéDeals
+                </span>
+                <p className="mt-3 text-sm font-semibold text-foreground">Abonnement</p>
+                <p className="mt-1 flex items-baseline gap-2">
+                  <span className="font-mono text-4xl font-bold text-accent">
+                    {PRIX_SOLO.toFixed(2)} €
+                  </span>
+                  <span className="text-sm font-normal text-muted">/mois</span>
+                </p>
+                <p className="mt-1 text-xs text-cyan">
+                  Déjà abonné à PokéDeals ? Le tarif descend automatiquement à {PRIX_BUNDLE.toFixed(2)} €/mois — aucune
+                  configuration nécessaire.
+                </p>
+                <ul className="mt-4 flex flex-col gap-2 text-sm text-muted">
+                  <li>Toutes les précommandes détectées, sans limite</li>
+                  <li>Alertes push et email</li>
+                  <li>{NOMBRE_BOUTIQUES} boutiques françaises et japonaises</li>
+                  <li>Résiliable à tout moment</li>
+                </ul>
+              </div>
             </div>
           </div>
           <p className="text-center text-xs text-muted">
-            Pas de niveau gratuit ni d&apos;essai — le service consiste à couvrir tout le
-            catalogue de précommandes dès l&apos;inscription.
+            Aucune carte bancaire requise pour recevoir ta première alerte gratuite.
           </p>
         </section>
 
@@ -251,9 +266,8 @@ export default async function Home() {
                 </h2>
                 <p className="mt-1 max-w-md text-sm text-muted">
                   Configure ta watchlist de cartes Pokémon TCG et reçois une alerte dès
-                  qu&apos;une bonne affaire tombe sous ton seuil de prix. Abonne-toi aux deux
-                  services : le geste commercial sur PokéPrécoms s&apos;applique
-                  automatiquement.
+                  qu&apos;une bonne affaire tombe sous ton seuil de prix. Palier gratuit jusqu&apos;à
+                  3 cartes, puis {PRIX_BUNDLE.toFixed(2)} €/mois si tu es déjà abonné ici.
                 </p>
               </div>
               <a

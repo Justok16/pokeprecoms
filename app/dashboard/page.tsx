@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { CATEGORIES_PRECOMMANDE } from "@/lib/constantes";
 import { createClient } from "@/lib/supabase/server";
+import { PRIX_SOLO } from "@/lib/stripe";
 import {
   basculerNotifEmail,
   creerSessionCheckout,
@@ -9,6 +10,8 @@ import {
   envoyerFeedback,
 } from "./actions";
 import NotifPush from "./notif-push";
+
+const PRIX_BUNDLE = 1.99;
 
 const PANNEAU = "rounded-2xl bg-surface p-5 shadow-[0_1px_0_rgba(255,255,255,0.03)_inset]";
 const BOUTON_PRIMAIRE =
@@ -52,10 +55,11 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
 
   const { data: preferences } = await supabase
     .from("user_preferences")
-    .select("notif_email")
+    .select("notif_email, alerte_gratuite_envoyee")
     .eq("user_id", user.id)
     .maybeSingle();
   const notifEmailActive = preferences?.notif_email ?? true;
+  const alerteGratuiteEnvoyee = preferences?.alerte_gratuite_envoyee ?? false;
 
   return (
     <div className="relative overflow-hidden">
@@ -109,10 +113,15 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
           ) : (
             <div className="flex items-center justify-between gap-4">
               <div>
-                <p className="text-sm font-semibold text-foreground">Aucun abonnement actif</p>
+                <p className="text-sm font-semibold text-foreground">
+                  {alerteGratuiteEnvoyee
+                    ? "Ta précommande gratuite a été envoyée"
+                    : "Aucun abonnement actif"}
+                </p>
                 <p className="mt-1 text-xs text-muted">
-                  Abonne-toi pour recevoir les alertes de précommande en temps réel — tarif réduit
-                  automatiquement si tu as déjà PokéDeals.
+                  {alerteGratuiteEnvoyee
+                    ? `Abonne-toi pour continuer à recevoir toutes les alertes — ${PRIX_SOLO.toFixed(2)} €/mois, ${PRIX_BUNDLE.toFixed(2)} €/mois si tu as déjà PokéDeals.`
+                    : `1 alerte gratuite dès qu'une précommande est détectée, pour essayer. Ensuite, ${PRIX_SOLO.toFixed(2)} €/mois — ${PRIX_BUNDLE.toFixed(2)} €/mois si tu as déjà PokéDeals.`}
                 </p>
               </div>
               <form action={creerSessionCheckout}>
@@ -124,49 +133,53 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
           )}
         </section>
 
-        {abonnementActif && (
-          <section className={`${PANNEAU} flex items-center justify-between gap-4`}>
-            <div>
-              <p className="text-sm font-semibold text-foreground">
-                🎁 Découvre PokéDeals
-              </p>
-              <p className="mt-1 text-xs text-muted">
-                Notre autre service alerte sur les bonnes affaires cartes Pokémon TCG. Abonne-toi
-                aux deux et paie moins cher au total.
-              </p>
-            </div>
-            <a
-              href="https://pokedeals-rho.vercel.app"
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`${LIEN_DISCRET} shrink-0`}
-            >
-              Découvrir →
-            </a>
-          </section>
-        )}
+        <section className={`${PANNEAU} flex items-center justify-between gap-4`}>
+          <div>
+            <p className="text-sm font-semibold text-foreground">
+              🎁 Découvre PokéDeals
+            </p>
+            <p className="mt-1 text-xs text-muted">
+              {abonnementActif
+                ? "Notre service sœur alerte sur les bonnes affaires cartes Pokémon TCG. Comme tu es déjà abonné ici, tu ne paies que 1,99 €/mois en plus si tu t'abonnes."
+                : "Notre service sœur alerte sur les bonnes affaires cartes Pokémon TCG — palier gratuit jusqu'à 3 cartes, puis 2,99 €/mois (1,99 € si tu es déjà abonné ici)."}
+            </p>
+          </div>
+          <a
+            href="https://pokedeals-rho.vercel.app"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`${LIEN_DISCRET} shrink-0`}
+          >
+            Découvrir →
+          </a>
+        </section>
 
-        {abonnementActif && (
-          <section className={`${PANNEAU} flex flex-col gap-2`}>
-            <h2 className="text-sm font-medium text-foreground">Notifications</h2>
-            <NotifPush />
-            <form action={basculerNotifEmail} className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                id="notif_email"
-                name="notif_email"
-                defaultChecked={notifEmailActive}
-                className="h-4 w-4 accent-[var(--accent)]"
-              />
-              <label htmlFor="notif_email" className="text-xs text-muted">
-                Recevoir mes alertes par email
-              </label>
-              <button type="submit" className={LIEN_DISCRET}>
-                Enregistrer
-              </button>
-            </form>
-          </section>
-        )}
+        <section className={`${PANNEAU} flex flex-col gap-2`}>
+          <h2 className="text-sm font-medium text-foreground">Notifications</h2>
+          {!abonnementActif && (
+            <p className="text-xs text-muted">
+              {alerteGratuiteEnvoyee
+                ? "Configure ces canaux pour recevoir tes prochaines alertes une fois abonné."
+                : "Configure ces canaux dès maintenant pour être sûr de recevoir ta précommande gratuite."}
+            </p>
+          )}
+          <NotifPush />
+          <form action={basculerNotifEmail} className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="notif_email"
+              name="notif_email"
+              defaultChecked={notifEmailActive}
+              className="h-4 w-4 accent-[var(--accent)]"
+            />
+            <label htmlFor="notif_email" className="text-xs text-muted">
+              Recevoir mes alertes par email
+            </label>
+            <button type="submit" className={LIEN_DISCRET}>
+              Enregistrer
+            </button>
+          </form>
+        </section>
 
         <section className={PANNEAU}>
           <h2 className="mb-3 text-sm font-medium text-foreground">Dernières précommandes détectées</h2>
