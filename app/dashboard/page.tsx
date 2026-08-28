@@ -1,13 +1,7 @@
 import Link from "next/link";
 import { CATEGORIES_PRECOMMANDE } from "@/lib/constantes";
 import { createClient } from "@/lib/supabase/server";
-import {
-  basculerNotifEmail,
-  creerSessionCheckout,
-  creerSessionPortail,
-  deconnexion,
-  envoyerFeedback,
-} from "./actions";
+import { basculerNotifEmail, deconnexion, envoyerFeedback } from "./actions";
 import NotifPush from "./notif-push";
 
 const PANNEAU = "rounded-2xl bg-surface p-5 shadow-[0_1px_0_rgba(255,255,255,0.03)_inset]";
@@ -17,8 +11,6 @@ const LIEN_DISCRET = "text-xs text-muted underline-offset-4 hover:text-foregroun
 const CHAMP =
   "rounded-md border border-line bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted focus:border-cyan focus:outline-none";
 
-const STATUTS_ABONNEMENT_ACTIF = ["active", "trialing"];
-
 export default async function DashboardPage(props: PageProps<"/dashboard">) {
   const searchParams = await props.searchParams;
   const supabase = await createClient();
@@ -27,14 +19,6 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
   } = await supabase.auth.getUser();
 
   if (!user) return null; // le proxy redirige déjà vers /login
-
-  const { data: abonnement } = await supabase
-    .from("subscriptions")
-    .select("status, current_period_end")
-    .eq("user_id", user.id)
-    .maybeSingle();
-  const abonnementActif =
-    !!abonnement && STATUTS_ABONNEMENT_ACTIF.includes(abonnement.status);
 
   const categorieParam = searchParams.categorie;
   const categorieActive = (
@@ -79,94 +63,49 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
           </form>
         </header>
 
-        {searchParams.abonnement === "succes" && (
-          <p className="rounded-xl bg-cyan/10 px-4 py-3 text-sm text-cyan">
-            Abonnement activé, merci ! Tu recevras désormais une alerte à chaque précommande
-            détectée en stock.
-          </p>
-        )}
-        {searchParams.abonnement === "annule" && (
-          <p className="rounded-xl bg-surface px-4 py-3 text-sm text-muted">
-            Paiement annulé — tu peux réessayer à tout moment.
-          </p>
-        )}
+        <p className="text-center font-mono text-xs text-cyan">
+          🆓 100% gratuit et illimité — toutes les précommandes détectées, sans abonnement
+        </p>
 
-        <section className={PANNEAU}>
-          {abonnementActif ? (
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <p className="text-sm font-semibold text-foreground">Abonnement actif</p>
-                <p className="mt-1 text-xs text-muted">
-                  Tu reçois toutes les alertes de précommande, en push et/ou par email.
-                </p>
-              </div>
-              <form action={creerSessionPortail}>
-                <button type="submit" className={LIEN_DISCRET}>
-                  Gérer mon abonnement
-                </button>
-              </form>
-            </div>
-          ) : (
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <p className="text-sm font-semibold text-foreground">Aucun abonnement actif</p>
-                <p className="mt-1 text-xs text-muted">
-                  Abonne-toi pour recevoir les alertes de précommande en temps réel — tarif réduit
-                  automatiquement si tu as déjà PokéDeals.
-                </p>
-              </div>
-              <form action={creerSessionCheckout}>
-                <button type="submit" className={BOUTON_PRIMAIRE}>
-                  S&apos;abonner
-                </button>
-              </form>
-            </div>
-          )}
+        <section className={`${PANNEAU} flex items-center justify-between gap-4`}>
+          <div>
+            <p className="text-sm font-semibold text-foreground">
+              🎁 Découvre PokéDeals
+            </p>
+            <p className="mt-1 text-xs text-muted">
+              Notre service sœur alerte sur les bonnes affaires cartes Pokémon TCG — 100% gratuit
+              et illimité, comme ici.
+            </p>
+          </div>
+          <a
+            href="https://pokedeals-rho.vercel.app"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`${LIEN_DISCRET} shrink-0`}
+          >
+            Découvrir →
+          </a>
         </section>
 
-        {abonnementActif && (
-          <section className={`${PANNEAU} flex items-center justify-between gap-4`}>
-            <div>
-              <p className="text-sm font-semibold text-foreground">
-                🎁 Découvre PokéDeals
-              </p>
-              <p className="mt-1 text-xs text-muted">
-                Notre autre service alerte sur les bonnes affaires cartes Pokémon TCG. Abonne-toi
-                aux deux et paie moins cher au total.
-              </p>
-            </div>
-            <a
-              href="https://pokedeals-rho.vercel.app"
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`${LIEN_DISCRET} shrink-0`}
-            >
-              Découvrir →
-            </a>
-          </section>
-        )}
-
-        {abonnementActif && (
-          <section className={`${PANNEAU} flex flex-col gap-2`}>
-            <h2 className="text-sm font-medium text-foreground">Notifications</h2>
-            <NotifPush />
-            <form action={basculerNotifEmail} className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                id="notif_email"
-                name="notif_email"
-                defaultChecked={notifEmailActive}
-                className="h-4 w-4 accent-[var(--accent)]"
-              />
-              <label htmlFor="notif_email" className="text-xs text-muted">
-                Recevoir mes alertes par email
-              </label>
-              <button type="submit" className={LIEN_DISCRET}>
-                Enregistrer
-              </button>
-            </form>
-          </section>
-        )}
+        <section className={`${PANNEAU} flex flex-col gap-2`}>
+          <h2 className="text-sm font-medium text-foreground">Notifications</h2>
+          <NotifPush />
+          <form action={basculerNotifEmail} className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="notif_email"
+              name="notif_email"
+              defaultChecked={notifEmailActive}
+              className="h-4 w-4 accent-[var(--accent)]"
+            />
+            <label htmlFor="notif_email" className="text-xs text-muted">
+              Recevoir mes alertes par email
+            </label>
+            <button type="submit" className={LIEN_DISCRET}>
+              Enregistrer
+            </button>
+          </form>
+        </section>
 
         <section className={PANNEAU}>
           <h2 className="mb-3 text-sm font-medium text-foreground">Dernières précommandes détectées</h2>
