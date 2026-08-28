@@ -30,9 +30,9 @@ export default function Confidentialite() {
         </h2>
         <p className="text-sm text-muted">
           Ces données sont utilisées uniquement pour faire fonctionner le
-          service : t&apos;identifier, t&apos;envoyer les alertes de
-          précommande, et gérer ton abonnement. Aucune donnée n&apos;est
-          vendue ni utilisée à des fins publicitaires.
+          service : t&apos;identifier et t&apos;envoyer les alertes de
+          précommande. Aucune donnée n&apos;est vendue ni utilisée à des fins
+          publicitaires.
         </p>
       </section>
 
@@ -42,10 +42,9 @@ export default function Confidentialite() {
         </h2>
         <p className="text-sm text-muted">
           Supabase (hébergement de la base de données et authentification),
-          Vercel (hébergement de l&apos;application), Stripe (traitement des
-          paiements), Resend (envoi des emails d&apos;alerte). Chacun agit en
-          tant que sous-traitant, dans le cadre de ses propres engagements de
-          confidentialité.
+          Vercel (hébergement de l&apos;application), Resend (envoi des
+          emails d&apos;alerte). Chacun agit en tant que sous-traitant, dans
+          le cadre de ses propres engagements de confidentialité.
         </p>
       </section>
 

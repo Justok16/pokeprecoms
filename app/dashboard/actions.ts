@@ -3,7 +3,6 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { determinerCouponBundle, getStripe } from "@/lib/stripe";
 
 type SubscriptionPushJSON = {
   endpoint: string;
@@ -66,61 +65,6 @@ export async function basculerNotifEmail(formData: FormData) {
   if (error) throw new Error(error.message);
 
   revalidatePath("/dashboard");
-}
-
-export async function creerSessionCheckout() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user || !user.email) redirect("/login");
-
-  const stripe = getStripe();
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
-
-  // Tarif bundle : reduit automatiquement le prix si ce client a deja un
-  // abonnement PokeDeals actif (memes coupons crees a la main dans Stripe,
-  // cf. lib/stripe.ts). Aucun coupon applicable -> tarif plein 7,99€, sans
-  // jamais bloquer le checkout.
-  const couponId = await determinerCouponBundle(stripe, user.email);
-  const discounts = couponId ? [{ coupon: couponId }] : undefined;
-
-  const session = await stripe.checkout.sessions.create({
-    mode: "subscription",
-    line_items: [{ price: process.env.STRIPE_PRICE_ID!, quantity: 1 }],
-    customer_email: user.email,
-    client_reference_id: user.id,
-    discounts,
-    success_url: `${siteUrl}/dashboard?abonnement=succes`,
-    cancel_url: `${siteUrl}/dashboard?abonnement=annule`,
-  });
-
-  if (session.url) redirect(session.url);
-}
-
-export async function creerSessionPortail() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
-
-  const { data: abonnement } = await supabase
-    .from("subscriptions")
-    .select("stripe_customer_id")
-    .eq("user_id", user.id)
-    .maybeSingle();
-
-  if (!abonnement?.stripe_customer_id) redirect("/dashboard");
-
-  const stripe = getStripe();
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
-  const session = await stripe.billingPortal.sessions.create({
-    customer: abonnement.stripe_customer_id,
-    return_url: `${siteUrl}/dashboard`,
-  });
-
-  redirect(session.url);
 }
 
 export async function deconnexion() {
