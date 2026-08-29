@@ -65,6 +65,7 @@ export async function basculerNotifEmail(formData: FormData) {
   if (error) throw new Error(error.message);
 
   revalidatePath("/dashboard");
+  redirect("/dashboard?notifications=enregistre");
 }
 
 export async function deconnexion() {
