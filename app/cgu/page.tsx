@@ -16,7 +16,7 @@ export default function CGU() {
           PokéPrécoms est un service d&apos;alerte automatique sur les
           précommandes de produits scellés Pokémon TCG (coffrets, displays,
           ETB...) disponibles sur des boutiques françaises et japonaises
-          partenaires. L&apos;utilisateur abonné reçoit une notification
+          partenaires. L&apos;utilisateur inscrit reçoit une notification
           (push et/ou email) dès qu&apos;un produit détecté devient
           effectivement commandable.
         </p>
@@ -35,40 +35,27 @@ export default function CGU() {
       <section className="flex flex-col gap-2">
         <h2 className="text-sm font-semibold text-foreground">3. Offre et tarifs</h2>
         <p className="text-sm text-muted">
-          Le service est accessible uniquement par abonnement payant,
-          résiliable à tout moment — il n&apos;existe pas de niveau gratuit.
-          Une réduction est appliquée automatiquement aux abonnés PokéDeals
-          faisant partie des 200 premiers abonnés fondateurs de ce dernier
-          service, en cas de double abonnement. Les tarifs en vigueur sont
-          affichés sur la page d&apos;accueil au moment de la souscription.
+          Le service est 100% gratuit et illimité : aucun abonnement, aucune
+          carte bancaire, aucun palier payant. Toutes les précommandes
+          détectées sont accessibles à tout utilisateur connecté, sans
+          restriction.
+        </p>
+      </section>
+
+      <section className="flex flex-col gap-2">
+        <h2 className="text-sm font-semibold text-foreground">4. Résiliation du compte</h2>
+        <p className="text-sm text-muted">
+          Le service étant gratuit, il n&apos;y a rien à résilier au sens
+          d&apos;un abonnement payant. L&apos;utilisateur peut cesser
+          d&apos;utiliser le service à tout moment en se déconnectant, ou
+          demander la suppression de son compte et des données associées via
+          le contact ci-dessous.
         </p>
       </section>
 
       <section className="flex flex-col gap-2">
         <h2 className="text-sm font-semibold text-foreground">
-          4. Droit de rétractation
-        </h2>
-        <p className="text-sm text-muted">
-          Conformément à l&apos;article L221-28 du Code de la consommation,
-          l&apos;abonnement étant un contenu numérique fourni immédiatement
-          après paiement, l&apos;utilisateur renonce expressément à son droit
-          de rétractation de 14 jours en validant la souscription.
-        </p>
-      </section>
-
-      <section className="flex flex-col gap-2">
-        <h2 className="text-sm font-semibold text-foreground">5. Résiliation</h2>
-        <p className="text-sm text-muted">
-          L&apos;abonnement peut être résilié à tout moment depuis le
-          tableau de bord (« Gérer mon abonnement »). La résiliation prend
-          effet à la fin de la période déjà payée ; aucun remboursement au
-          prorata n&apos;est effectué.
-        </p>
-      </section>
-
-      <section className="flex flex-col gap-2">
-        <h2 className="text-sm font-semibold text-foreground">
-          6. Responsabilité
+          5. Responsabilité
         </h2>
         <p className="text-sm text-muted">
           Les informations de disponibilité et de prix affichées proviennent
@@ -82,7 +69,7 @@ export default function CGU() {
       </section>
 
       <section className="flex flex-col gap-2">
-        <h2 className="text-sm font-semibold text-foreground">7. Contact</h2>
+        <h2 className="text-sm font-semibold text-foreground">6. Contact</h2>
         <p className="text-sm text-muted">
           Pour toute question relative à ces conditions : [ton adresse
           email].
