@@ -124,10 +124,21 @@ self.addEventListener("pushsubscriptionchange", (event) => {
         });
 
         const json = nouvelAbonnement.toJSON();
+        // Audit du 31/08/2026 (même correctif que pokedeals-saas) :
+        // event.oldSubscription donne l'ANCIEN endpoint, celui que le
+        // serveur a encore en base. Sans le transmettre, l'ancienne ligne
+        // push_subscriptions n'était jamais nettoyée : elle s'accumulait à
+        // chaque rotation, et le scraper continuait indéfiniment à tenter
+        // d'envoyer des push vers un endpoint mort.
+        const ancienEndpoint = event.oldSubscription?.endpoint;
         await fetch("/api/push/resubscribe", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ endpoint: json.endpoint, keys: json.keys }),
+          body: JSON.stringify({
+            endpoint: json.endpoint,
+            keys: json.keys,
+            oldEndpoint: ancienEndpoint && ancienEndpoint !== json.endpoint ? ancienEndpoint : undefined,
+          }),
         });
       } catch (error) {
         console.error("Échec de la re-souscription push après rotation d'endpoint", error);
