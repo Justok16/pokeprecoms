@@ -49,6 +49,31 @@ export async function supprimerAbonnementPush(endpoint: string) {
     .eq("user_id", user.id);
 }
 
+// Audit du 31/08/2026 (même correctif que pokedeals-saas) : la vérification
+// "notifications actives ?" côté client se basait UNIQUEMENT sur
+// navigator.serviceWorker.pushManager.getSubscription() (état du
+// navigateur), jamais recroisée avec le propriétaire réel en base -- sur un
+// appareil partagé, si l'utilisateur A active le push puis se déconnecte
+// sans cliquer "Désactiver", B qui se connecte ensuite voit l'UI afficher
+// "actif" à tort. Cette action permet au client de vérifier que l'endpoint
+// appartient bien à l'utilisateur CONNECTÉ avant d'afficher "actif" --
+// sinon l'appelant doit désabonner le navigateur.
+export async function abonnementPushAppartientAUtilisateur(endpoint: string): Promise<boolean> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return false;
+
+  const { data } = await supabase
+    .from("push_subscriptions")
+    .select("user_id")
+    .eq("endpoint", endpoint)
+    .maybeSingle();
+
+  return data?.user_id === user.id;
+}
+
 export async function basculerNotifEmail(formData: FormData) {
   const supabase = await createClient();
   const {
