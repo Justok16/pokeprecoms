@@ -11,6 +11,12 @@ const LIEN_DISCRET = "text-xs text-muted underline-offset-4 hover:text-foregroun
 const CHAMP =
   "rounded-md border border-line bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted focus:border-cyan focus:outline-none";
 
+// Renforcement défensif (31/08/2026, même correctif que pokedeals-saas,
+// signalement direct de l'utilisateur -- préférence email "recochée" à
+// chaque visite) : force un rendu dynamique systématique, sans AUCUNE mise
+// en cache possible côté Next.js pour cette page.
+export const dynamic = "force-dynamic";
+
 export default async function DashboardPage(props: PageProps<"/dashboard">) {
   const searchParams = await props.searchParams;
   const supabase = await createClient();
