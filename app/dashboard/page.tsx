@@ -2,6 +2,8 @@ import Link from "next/link";
 import { CATEGORIES_PRECOMMANDE } from "@/lib/constantes";
 import { createClient } from "@/lib/supabase/server";
 import { basculerNotifEmail, deconnexion, envoyerFeedback } from "./actions";
+import AlertesListe from "./alertes-liste";
+import { TAILLE_PAGE_ALERTES } from "./alertes-types";
 import NotifPush from "./notif-push";
 
 const PANNEAU = "rounded-2xl bg-surface p-5 shadow-[0_1px_0_rgba(255,255,255,0.03)_inset]";
@@ -34,17 +36,37 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
 
   let requeteAlertes = supabase
     .from("precommande_alerts")
-    .select("id, titre_produit, boutique, url_produit, prix, categorie, created_at")
+    .select("id, titre_produit, boutique, url_produit, prix, devise, categorie, created_at")
     .order("created_at", { ascending: false })
-    .limit(50);
+    .limit(TAILLE_PAGE_ALERTES);
   if (filtreValide) requeteAlertes = requeteAlertes.eq("categorie", categorieActive);
-  const { data: alertes } = await requeteAlertes;
 
-  const { data: preferences } = await supabase
+  const requetePreferences = supabase
     .from("user_preferences")
     .select("notif_email")
     .eq("user_id", user.id)
     .maybeSingle();
+
+  // Audit PRIORITAIRE du 03/09/2026 -- même schéma de bug qu'un incident réel
+  // survenu plus tôt cette session (une colonne manquante en base avait fait
+  // échouer silencieusement CETTE MÊME requête `precommande_alerts` pendant
+  // longtemps sans que personne ne le remarque : `data` était simplement
+  // `null`, rendu à l'identique d'un vrai "aucune précommande détectée").
+  // Corrigé ici : `error` est désormais systématiquement vérifiée et loguée
+  // côté serveur pour les deux requêtes, pour qu'une requête cassée soit
+  // visible dans les logs Vercel au lieu de se confondre avec un état vide
+  // légitime. Les deux requêtes sont aussi lancées en parallèle (Promise.all)
+  // puisqu'elles sont indépendantes l'une de l'autre.
+  const [{ data: alertes, error: erreurAlertes }, { data: preferences, error: erreurPreferences }] =
+    await Promise.all([requeteAlertes, requetePreferences]);
+
+  if (erreurAlertes) {
+    console.error("[dashboard] Échec de la requête precommande_alerts :", erreurAlertes.message);
+  }
+  if (erreurPreferences) {
+    console.error("[dashboard] Échec de la requête user_preferences :", erreurPreferences.message);
+  }
+
   const notifEmailActive = preferences?.notif_email ?? true;
 
   return (
@@ -143,32 +165,16 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
               </Link>
             ))}
           </div>
-          {alertes && alertes.length > 0 ? (
-            <ul className="flex flex-col gap-3">
-              {alertes.map((a) => (
-                <li key={a.id} className="border-t border-line pt-3 first:border-0 first:pt-0">
-                  <a
-                    href={a.url_produit}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm font-medium text-foreground hover:underline"
-                  >
-                    {a.titre_produit}
-                  </a>
-                  <p className="mt-1 font-mono text-xs text-muted">
-                    {a.boutique}
-                    {a.prix ? ` · ${Number(a.prix).toFixed(2)} €` : ""}
-                  </p>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-sm text-muted">
-              {filtreValide
-                ? "Aucune précommande dans cette catégorie pour l'instant."
-                : "Aucune précommande détectée pour l'instant — reviens bientôt."}
+          {erreurAlertes && (
+            <p className="mb-3 text-xs text-danger">
+              Impossible de charger les précommandes pour l&apos;instant, réessaie dans un instant.
             </p>
           )}
+          <AlertesListe
+            key={filtreValide ? categorieActive : "tout"}
+            alertesInitiales={alertes ?? []}
+            categorie={filtreValide ? categorieActive : undefined}
+          />
         </section>
 
         <section className={PANNEAU}>

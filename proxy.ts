@@ -7,6 +7,11 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|icons/|manifest.webmanifest|sw.js|offline.html|api/webhooks|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    // "api/webhooks" retiré le 03/09/2026 (audit) : hérité de pokedeals-saas
+    // (webhook Stripe, cf. migration 0002_subscriptions.sql), mais cette
+    // route n'a jamais existé dans CE dépôt (modèle 100% gratuit depuis le
+    // début du scaffold, jamais de Stripe côté PokéPrécoms) -- vérifié par
+    // recherche exhaustive, aucune route app/api/webhooks/*.
+    "/((?!_next/static|_next/image|favicon.ico|icons/|manifest.webmanifest|sw.js|offline.html|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };
