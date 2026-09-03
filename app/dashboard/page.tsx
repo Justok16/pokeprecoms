@@ -2,6 +2,8 @@ import Link from "next/link";
 import { CATEGORIES_PRECOMMANDE } from "@/lib/constantes";
 import { createClient } from "@/lib/supabase/server";
 import { basculerNotifEmail, deconnexion, envoyerFeedback } from "./actions";
+import AlertesListe from "./alertes-liste";
+import { TAILLE_PAGE_ALERTES } from "./alertes-types";
 import NotifPush from "./notif-push";
 
 const PANNEAU = "rounded-2xl bg-surface p-5 shadow-[0_1px_0_rgba(255,255,255,0.03)_inset]";
@@ -16,24 +18,6 @@ const CHAMP =
 // chaque visite) : force un rendu dynamique systématique, sans AUCUNE mise
 // en cache possible côté Next.js pour cette page.
 export const dynamic = "force-dynamic";
-
-// Formatage prix/devise (audit du 03/09/2026, cf. migration
-// 0009_precommande_alerts_devise.sql) : le produit couvre explicitement des
-// boutiques FRANÇAISES ET JAPONAISES (lib/constantes.ts) mais `prix` n'avait
-// aucune notion de devise et l'UI affichait toujours "€" -- vérification en
-// base (table vide, 0 ligne au moment de l'audit) et revue du scraper
-// (connecteur_supabase_precoms.py, dépôt justok16/pokedeals) : aucune
-// conversion de devise n'existe nulle part dans le pipeline, le prix est
-// écrit tel quel depuis la fiche produit scrapée. Impossible de confirmer
-// sur des données réelles si un futur prix JP sera déjà en EUR ou brut en
-// JPY -- `devise` (nouvelle colonne, défaut 'EUR') permet au scraper de
-// commencer à l'enregistrer plus tard ; ici, on affiche le montant BRUT
-// avec le bon symbole selon `devise`, sans jamais deviner de taux de
-// conversion.
-function formaterPrix(prix: number, devise: string | null): string {
-  if (devise === "JPY") return `¥${Math.round(prix).toLocaleString("fr-FR")}`;
-  return `${prix.toFixed(2)} €`;
-}
 
 export default async function DashboardPage(props: PageProps<"/dashboard">) {
   const searchParams = await props.searchParams;
@@ -54,7 +38,7 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
     .from("precommande_alerts")
     .select("id, titre_produit, boutique, url_produit, prix, devise, categorie, created_at")
     .order("created_at", { ascending: false })
-    .limit(50);
+    .limit(TAILLE_PAGE_ALERTES);
   if (filtreValide) requeteAlertes = requeteAlertes.eq("categorie", categorieActive);
 
   const requetePreferences = supabase
@@ -186,34 +170,11 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
               Impossible de charger les précommandes pour l&apos;instant, réessaie dans un instant.
             </p>
           )}
-          {alertes && alertes.length > 0 ? (
-            <ul className="flex flex-col gap-3">
-              {alertes.map((a) => (
-                <li key={a.id} className="border-t border-line pt-3 first:border-0 first:pt-0">
-                  <a
-                    href={a.url_produit}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm font-medium text-foreground hover:underline"
-                  >
-                    {a.titre_produit}
-                  </a>
-                  <p className="mt-1 font-mono text-xs text-muted">
-                    {a.boutique}
-                    {a.prix ? ` · ${formaterPrix(Number(a.prix), a.devise)}` : ""}
-                  </p>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            !erreurAlertes && (
-              <p className="text-sm text-muted">
-                {filtreValide
-                  ? "Aucune précommande dans cette catégorie pour l'instant."
-                  : "Aucune précommande détectée pour l'instant — reviens bientôt."}
-              </p>
-            )
-          )}
+          <AlertesListe
+            key={filtreValide ? categorieActive : "tout"}
+            alertesInitiales={alertes ?? []}
+            categorie={filtreValide ? categorieActive : undefined}
+          />
         </section>
 
         <section className={PANNEAU}>
