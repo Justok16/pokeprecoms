@@ -36,7 +36,7 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
     .from("precommande_alerts")
     .select("id, titre_produit, boutique, url_produit, prix, categorie, created_at")
     .order("created_at", { ascending: false })
-    .limit(20);
+    .limit(50);
   if (filtreValide) requeteAlertes = requeteAlertes.eq("categorie", categorieActive);
   const { data: alertes } = await requeteAlertes;
 
