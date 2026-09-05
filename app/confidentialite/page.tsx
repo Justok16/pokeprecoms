@@ -42,7 +42,7 @@ export default function Confidentialite() {
         </h2>
         <p className="text-sm text-muted">
           Supabase (hébergement de la base de données et authentification),
-          Vercel (hébergement de l&apos;application), Resend (envoi des
+          Vercel (hébergement de l&apos;application), SendGrid (envoi des
           emails d&apos;alerte). Chacun agit en tant que sous-traitant, dans
           le cadre de ses propres engagements de confidentialité.
         </p>
