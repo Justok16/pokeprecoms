@@ -58,7 +58,7 @@ ligne par utilisateur), alors que l'équivalent côté PokéDeals
   de rotation d'endpoint (`app/api/push/resubscribe`) et vérification que
   l'abonnement stocké appartient bien à l'utilisateur connecté (protection
   contre un faux "actif" sur un appareil partagé).
-- **Notifications email (Resend)** — activables/désactivables
+- **Notifications email (SendGrid)** — activables/désactivables
   indépendamment du push, préférence par défaut activée
   (`user_preferences.notif_email`).
 - **PWA installable** — manifeste (`app/manifest.ts`), service worker
@@ -94,8 +94,8 @@ diffusée avec succès.
 Secrets côté scraper (GitHub Actions, dépôt `justok16/pokedeals`) :
 `POKEPRECOMS_SUPABASE_URL` / `POKEPRECOMS_SUPABASE_SERVICE_ROLE_KEY`
 (projet Supabase **distinct** de celui de PokéDeals), et
-`VAPID_PRIVATE_KEY` / `VAPID_CLAIM_EMAIL` / `RESEND_API_KEY` /
-`RESEND_FROM_EMAIL` réutilisés tels quels (mêmes comptes/secrets que pour
+`VAPID_PRIVATE_KEY` / `VAPID_CLAIM_EMAIL` / `SENDGRID_API_KEY` /
+`SENDGRID_FROM_EMAIL` réutilisés tels quels (mêmes comptes/secrets que pour
 PokéDeals, décision explicite de Justok).
 
 ## Stack technique
@@ -183,9 +183,12 @@ la commande de génération). `VAPID_PUBLIC_KEY` →
 `NEXT_PUBLIC_VAPID_PUBLIC_KEY` ici, `VAPID_PRIVATE_KEY` +
 `VAPID_CLAIM_EMAIL` en secrets GitHub Actions sur `justok16/pokedeals`.
 
-**Email** : compte [Resend](https://resend.com) — peut réutiliser le même
+**Email** : compte [SendGrid](https://sendgrid.com) — peut réutiliser le même
 compte que pokedeals-saas avec une adresse d'envoi distincte (ex.
-`PokéPrécoms <alertes@tondomaine.com>`), ou un compte séparé.
+`PokéPrécoms <alertes@tondomaine.com>`), ou un compte séparé. Migré de Resend
+le 04/09/2026 (cf. `justok16/pokedeals`, PR #100) : Resend restreignait la
+livraison au seul propriétaire du compte en mode sandbox (sans domaine
+vérifié), SendGrid permet une vérification "Single Sender" gratuite.
 
 Ces deux canaux sont entièrement gratuits à ce niveau d'usage — aucune
 intégration de paiement n'existe ni n'est nécessaire nulle part dans le
