@@ -28,3 +28,7 @@ Identité visuelle propre créée le 23/08/2026 (`public/icons/*.png` + `app/fav
 ## Vérification Google Search Console
 
 Pas encore configurée (`verification.google` absent de `app/layout.tsx`, contrairement à pokedeals-saas) — à faire une fois le site déployé sur son propre domaine/URL Vercel.
+
+## Conventions de travail
+
+- **PRs Dependabot bloquées volontairement (09/09/2026)** : `Bump eslint 9.39.5 → 10.10.0` et `Bump typescript 5.9.3 → 7.0.2` (même situation sur `pokedeals-saas`) — CI rouge sur les deux, ce sont des montées de version MAJEURES (TypeScript 7 = réécriture complète du compilateur en Go, tout juste sortie) qui casseraient probablement l'outillage (éditeur, plugins ESLint qui parsent le TS, version de TS pinnée par Next.js) pour un gain quasi nul sur un projet de cette taille (le typecheck est déjà rapide). Décision explicite de Justok : **laisser bloquées tant que l'écosystème n'a pas eu le temps de se stabiliser dessus**, mais **surveiller et migrer dès que c'est stable** — pas les laisser indéfiniment. Avant de merger un jour ces PRs (ou de retenter la migration à la main) : revérifier que Next.js/ESLint config/les plugins TS du projet déclarent officiellement la compatibilité, pas juste "la CI passe une fois".
